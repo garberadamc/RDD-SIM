@@ -26,6 +26,9 @@ $Y_i = \beta_0 + \beta_1 D_i + \beta_2 X_i + \beta_3 (D_i \cdot X_i) + \epsilon_
 
 
 ### Load packages
+
+------------------------------------------------------------------------
+
 ```{r}
 library(tidyverse)
 library(rdrobust)
@@ -41,7 +44,8 @@ Run RDD analysis & present results using `lm()` & `ggplot()`
 
 ------------------------------------------------------------------------
 
-### Simulate Example Data
+Simulate Example Data
+
 ```{r}
 # For reproducibility
 set.seed(2102025)  
@@ -63,6 +67,8 @@ Y <- 2 + 3*X + 2*Treated + rnorm(n, 0, 1)
 data <- data.frame(X, Treated, Y)
 ```
 
+------------------------------------------------------------------------
+
 Visualize the data
 ```{r}
 ggplot(data, aes(x = X, y = Y, color = as.factor(Treated))) +
@@ -77,7 +83,10 @@ ggplot(data, aes(x = X, y = Y, color = as.factor(Treated))) +
   theme_minimal()
 ```
 
-Run regression using `lm()`
+------------------------------------------------------------------------
+
+Estimate the RDD regression using `lm()`
+
 ```{r}
 
 rdd_ols <- lm(Y ~ Treated +
@@ -88,6 +97,10 @@ rdd_ols <- lm(Y ~ Treated +
 # Display summary of regression results
 summ(rdd_ols)
 ```
+
+------------------------------------------------------------------------
+
+Create RDD plot using simple OLS approach
 
 ```{r}
 ggplot(data, aes(x = X, y = Y, color = as.factor(Treated))) +
@@ -102,24 +115,24 @@ ggplot(data, aes(x = X, y = Y, color = as.factor(Treated))) +
 
 ------------------------------------------------------------------------
 
-### Using package {`rdrobust`}
+### Estimate & Visialize RDD using {`rdrobust`}
 
 ------------------------------------------------------------------------
 
-**RDD Robust Estimation Method (`local polynomial regression`)**2: 
+**RDD Robust Estimation Method (`local polynomial regression`)**: 
 
-Local polynomial regression is a method used to estimate relationships between variables while giving more weight to observations near a specific point— in this case, the cutoff in a Regression Discontinuity Design (RDD). Instead of fitting an ordinary linear regression, it fits separate curved-regressions on either side of the cutoff using only nearby data points. The method allows for flexibility in capturing non-linear patterns.
-
-This tutorial walks you through using **Regression Discontinuity Design (RDD)** to estimate causal effects when treatment assignment is determined by a cutoff value. We'll explain each step in detail so that even if you're new to RDD, you can follow along!
+Local polynomial regression is a method used to estimate relationships between variables while giving more weight to observations near a specific point— in this case, the RDD threshold. Instead of fitting an ordinary linear regression, it fits separate non-linear regressions on either side of the cutoff using only data points near the cutoff. 
 
 **Interpreting output**:
 
 *Default estimation options used by the `rdrobust()` function*:
 
-- Bandwidth Optimization (`BW type: mserd`): The Mean Squared Error optimal bandwidth is chosen to balance accuracy & bias.
-- Bandwidth Estimate (`h = 0.461`): This is the range around the cutoff (X = 0) where the model uses a subste of the data to estimate the treatment effect.
+- Bandwidth Optimization (`BW type: mserd`): The Mean Squared Error bandwidth is optimized to balance accuracy & bias.
+- Bandwidth Estimate (`h = 0.461`): This is the range around the cutoff (X = 0) where the model uses a subset of the data to estimate the treatment effect.
 - Kernel (`Triangular`): Gives more weight to data points closer to the cutoff, meaning observations near (`X=0`)
-- Variance Estimation (Nearest Neighbor; `VCE method: NN`): Instead of assuming equal variance across all observations, this method adjusts the uncertainty estimates by considering how variability changes near the cutoff.
+- Variance Estimation (Nearest Neighbor; `VCE method: NN`): Instead of assuming equal variance across all observations, the error estimates are adjusted by considering how variability changes near the cutoff.
+
+------------------------------------------------------------------------
 
 ```{r}
 # Estimate RDD with a sharp cutoff at X = 0
@@ -128,6 +141,8 @@ rdd_model <- rdrobust(Y, X, c = 0)
 # Print summary of results
 summary(rdd_model)
 ```
+
+------------------------------------------------------------------------
 
 **Visualize the RDD discontinuity using `rdplot()`**:
 
@@ -168,26 +183,18 @@ Y <- ifelse(X >= 0, Y_treatment, Y_control)
 data <- data.frame(X, Y)
 ```
 
+------------------------------------------------------------------------
 
-```{r}
-# Run rdrobust with sharp cutoff at X = 0
-rdd_model <- rdrobust(Y, X, c = 0)
-
-# Print summary of results
-summary(rdd_model)
-```
-
-Plot RDD using 
+Visualize the discontinuity using `rdplot()`
 ```{r}
 # Plot RDD
 rdplot(Y, X, c = 0, title = "Regression Discontinuity Plot- Non-Linear Trends")
 
 ```
 
-
 ------------------------------------------------------------------------
 
-### Make figure for lecture slides
+### Make RDD illustration for lecture slides
 
 ------------------------------------------------------------------------
 
@@ -210,6 +217,8 @@ Y <- ifelse(D == 1, 19000 + 5*X + 500, 19000 + 4*X) + rnorm(n, 0, 300)
 data <- data.frame(X, Y, D)
 ```
 
+------------------------------------------------------------------------
+
 Run separate regressions for control & treatment groups
 ```{r}
 # Regression for control group (X < 2000)
@@ -219,6 +228,8 @@ control_fit <- lm(Y ~ X, data = data, subset = (D == 0))
 treated_fit <- lm(Y ~ X, data = data, subset = (D == 1))
 
 ```
+
+------------------------------------------------------------------------
 
 Create plot
 ```{r}
@@ -239,4 +250,9 @@ Save plot
 ggsave(here("figures", "rdd_illus_plot.png"), dpi=300, height=4, width=9, units="in")
 ```
 
+------------------------------------------------------------------------
 
+```{r, message=TRUE, echo=FALSE}
+library(cowsay)
+say("The End", "duck")
+```
