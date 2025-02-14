@@ -1,0 +1,15 @@
+/* Add an outline box around code blocks */
+pre {
+    border: 2px solid #333; /* Dark border */
+    border-radius: 8px; /* Rounded corners */
+    padding: 10px;
+    background-color: #f8f9fa; /* Light background */
+}
+
+/* Ensure inline code (inside text) is styled appropriately */
+code {
+    background-color: #f1f1f1;
+    padding: 2px 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
